@@ -1,0 +1,103 @@
+#! /bin/sh
+WEBHOME=/export/web/webserver/apache/share
+
+# Get serach parameters
+
+[ "${QUERY_STRING:-NO}" != NO ]&&{
+	ARGV=`	echo "$QUERY_STRING"|\
+		sed '
+			s/Node=//
+			s/++*/ /g
+			s/%2C/ /g
+			s/  */ /g
+		'`
+	set -- "$ARGV"
+}
+
+# Print html header
+
+echo "Content-type: text/html
+
+		
+<TITLE> SUNSA Supported Node Information Service </TITLE>
+<HTML>
+`cat $WEBHOME/htdocs/standard/include/eweb_header.html`
+<BODY>
+<BODY bgcolor="white">
+"
+cmd=`echo $*|sed '
+s/  */|/g
+s/\./\\\./g
+'`
+
+cmd=`echo "$cmd" |tr "[a-z]" "[A-Z]"`
+cd $WEBHOME/htdocs/contact
+for db in *.db
+do
+	cat $db|
+	sed '
+	s///g
+	s/  */ /g
+	s/ 	/	/g
+	s/	 /	/g
+	s/		*$//
+	/^$/d'|
+  	nawk  -F"	" '
+		BEGIN { FOUND=0; }
+		NR == 1  { header=$0; F_NUM=NF; next; }
+		{ line=$0 ; $0=toupper($0) }
+        	/'"$cmd"'/{ 
+			if( FOUND == 0 ){
+			# PRINT HEADER
+				print "<br><b>'"$db"'</b><br>"
+				print "<table border width=\"100%\"><b>"
+				print "<tr bgcolor=\"#66ffff\">"
+				print "<td align=\"center\">"
+				split(header,a,"	")
+				for(i=1;i<F_NUM;i++){
+					if( a[i] == "" )
+						print "\&nbsp;"
+					else
+						print a[i]
+					print "</td><td align=\"center\">"
+				}
+				i=F_NUM
+				if( a[i] == "" )
+					print "\&nbsp;"
+				else
+					print a[i]
+				print "</td></tr>"
+			}
+			FOUND=1; 
+			# PRINT BODY
+			split(line,a,"	")
+			print "<tr>"
+			print "<td align=\"left\" valign=\"top\">"
+			for(i=1;i<F_NUM;i++){
+				if( a[i] == "" )
+					print "\&nbsp;"
+				else
+					print a[i]
+				print "</td><td align=\"left\" valign=\"top\">"
+			}
+			i=F_NUM
+			if( a[i] == "" )
+				print "\&nbsp;"
+			else
+				print a[i]
+			print "</td></tr>"
+		}
+		END{
+			print "</table>"
+		}
+	' 
+done
+cat <<END
+<br>
+`cat $WEBHOME/htdocs/standard/include/eweb_footer.html`
+END
+
+
+# Print footer
+
+echo "</body></HTML>"

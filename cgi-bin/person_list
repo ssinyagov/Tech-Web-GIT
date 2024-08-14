@@ -1,0 +1,49 @@
+#! /bin/sh
+WEBHOME=/export/web/webserver/apache/share
+USAGE="Usage: $0 [-i] expr_list .."
+
+# Get serach parameters
+
+[ "$1" = "-i" ]&&{
+	print_headers=no
+	shift
+}
+[ "$#" = 0 ]&&{
+	echo "$USAGE"
+	exit
+}
+
+cmd=`echo $*|sed 's/  */|/g'`
+
+cd $WEBHOME/htdocs/contact
+
+for db in *.db
+do
+	read header < $db
+	tail +2 $db|/bin/egrep -i "$cmd" |
+	{
+	if read ln ; then (
+		[ "$print_headers" != "no" ]&&{
+			echo "\n\n"
+			echo "DATABASE FILE:	$db"
+			echo "==============\n"
+			echo "HEADER       :"
+			echo "=============="
+			echo $header
+			echo ""
+			echo "DATA         :"
+			echo "=============="
+		}
+		( echo $ln ; cat )|
+	 	sed '
+			s/  */ /g
+			s/ 	/	/g
+			s/	 /	/g
+			s/^ //
+			s/ $//
+			/^$/d
+		'
+	)
+	fi
+	}
+done

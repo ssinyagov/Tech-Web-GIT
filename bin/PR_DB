@@ -1,0 +1,74 @@
+#! /bin/sh
+
+# Get Options
+# Usage:  $0  database_name  [expr expr ...]
+# Use $0 "" [expr  ...] if you don't want to print database name
+
+[ "$#" != 0 ]&&{ 
+	db=$1 ; shift
+	[ "$db" != "" ]&&{
+		[ -f "$db" ]&&{
+			dt=`ls -l $db |awk '{ print $6,$7,$8 }'`
+		}
+	}
+}
+cmd="$*"
+
+if [ "$cmd" = "" ]; then
+	cmd="^"
+else
+	cmd=`echo "$*"|sed '
+	s/  */|/g
+	s/\./\\\./g
+	'|tr "[a-z]" "[A-Z]"`
+fi
+
+if [ "$cmd" = "ALL" ]; then
+	cmd="^"
+fi
+
+sed '
+	s///g
+	s/  */ /g
+	s/ 	/	/g
+	s/	 /	/g
+	s/		*$//
+	/^$/d'|
+nawk  -F"	" '
+	BEGIN { FOUND=0; }
+	NR == 1  { header=$0; F_NUM=NF; next; }
+	{ line=$0 ; $0=toupper($0) }
+       	 /'"$cmd"'/{ 
+		if( FOUND == 0 ){
+		# PRINT HEADER
+			if( "'"$db"'" != "" )print "<br><b>DataBase: '"$db"',  Last Update: '"$dt"'</b><br>"
+			print "<table border width=\"100%\"><b>"
+			print "<tr bgcolor=\"#66ffff\">"
+			print "<td align=\"center\">"
+			split(header,a,"	")
+			for(i=1;i<F_NUM;i++){
+				if( a[i] == "" ) print "\&nbsp;"
+				else print a[i];
+				print "</td><td align=\"center\">"
+			}
+			i=F_NUM
+			if( a[i] == "" ) print "\&nbsp;"
+			else print a[i]
+			print "</td></tr>"
+		}
+		FOUND=1; 
+		# PRINT BODY
+		split(line,a,"	")
+		print "<tr><td align=\"left\" valign=\"top\">"
+		for(i=1;i<F_NUM;i++){
+			if( a[i] == "" ) print "\&nbsp;"
+			else print a[i]
+			print "</td><td align=\"left\" valign=\"top\">"
+		}
+		i=F_NUM
+		if( a[i] == "" ) print "\&nbsp;"
+		else print a[i]
+		print "</td></tr>"
+	}
+	END{ print "</table>" }
+' 

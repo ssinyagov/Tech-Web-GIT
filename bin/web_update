@@ -1,0 +1,14 @@
+#! /bin/sh
+
+WEBHOME=`grep "^webadmin:" /etc/passwd|cut -f 6 -d":"`
+RWEBHOME=/export/web/webserver/apache/share
+
+list="
+htdocs/contact
+htdocs/index.html
+htdocs/project/DR"
+
+rsh cltsunsa00 "cd $RWEBHOME ; find `echo $list` -print|cpio -oc"|{
+cd $WEBHOME
+cpio -icdvum
+}

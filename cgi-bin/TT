@@ -1,0 +1,13 @@
+#! /bin/sh
+NEWS_DIR=/export/web/webserver/apache/share/htdocs/news
+
+cd $NEWS_DIR
+find . -type d -print|
+sed '
+s/\.\///g
+s/\.//g
+s/\//\./g
+s/ /\
+/g'|
+sed 's/^/<OPTION>/'
+

@@ -1,0 +1,99 @@
+#! /bin/sh
+
+sh_commands(){
+	NAWK=/bin/nawk
+	CAT=/bin/cat
+	GREP=/bin/grep
+	CUT=/bin/cut
+	SED=/bin/sed
+	SORT=/bin/sort
+	UNIQ=/bin/uniq
+	TEE=/bin/tee
+	CD=cd
+}
+
+sh_commands
+
+WEBHOME=`$GREP "^webadmin:" /etc/passwd|$CUT -f 6 -d":"`
+export WEBHOME
+PR_DB=$WEBHOME/bin/pr_db
+EMC_HOME=$WEBHOME/htdocs/EMC
+EMC_DATA=/EMC
+export EMC_HOME EMC_DATA
+
+
+# Get serach parameters
+
+[ "${QUERY_STRING:-NO}" != NO ]&&{
+	ARGV=`	echo "$QUERY_STRING"|\
+		sed '
+			s/Node=//
+			s/++*/ /g
+			s/%2C/ /g
+			s/  */ /g
+			/^  *$/d
+		'`
+	set -- "$ARGV"
+}
+
+# Print html header
+
+echo "Content-type: text/html
+
+		
+<TITLE> SUNSA Supported EMC Node Information Service </TITLE>
+<HTML>
+`cat $WEBHOME/htdocs/standard/include/eweb_header.html`
+<BODY>
+<BODY bgcolor="white">
+"
+[ "$*" !=  ""   ]&&{
+cd $EMC_HOME
+        for db in EMC_TO_HOSTS
+        do
+                cat $db|
+                sed 's/[0-9]/ &/'|
+                sort -k 2,3n|
+                sed '/ [0-9]/s/ //'|
+                sed '
+                        /------/d
+                        s/  */ /g
+                        s/^  *//
+                        s/  *$//
+                        s/ /	/g
+                        /^$/d
+                '|
+  awk -F"	" '
+                        NR == 1 { print; next }
+                        NF < 2 { next }
+                        {
+                                if( NF > 7) {
+                                        nf=NF
+                                        frame=$3
+                                        for( i=4 ;i <= 3+nf-7;i++)
+		frame=sprintf("%s %s",frame,$(i)) 
+					$3=frame
+                                        for(i=3;i>=0;i--)
+                                                $(7-i)=$(nf-i)
+                                }
+                                $7=sprintf("<a href=\"/cgi-bin/node_list.cgi?Node=%s\">%s</a>",$1,$7)
+                                $1=sprintf("<a href=\"'"$EMC_DATA"'/%s\">%s</a>",$1,$1)
+                                $2=sprintf("<a href=\"'"$EMC_DATA"'/%s\">%s</a>",$2,$2)
+                                for(i=1;i<8;i++)printf "%s\t",$i
+                                print $i
+                        }
+ '|
+                $PR_DB $db $*
+        done
+
+
+}
+cat <<END
+<br>
+`cat $WEBHOME/htdocs/standard/include/eweb_footer.html`
+END
+
+
+# Print footer
+
+echo "</body></HTML>"

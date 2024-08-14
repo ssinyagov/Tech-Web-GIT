@@ -1,0 +1,66 @@
+#! /bin/sh
+
+sh_commands(){
+	NAWK=/bin/nawk
+	CAT=/bin/cat
+	GREP=/bin/grep
+	CUT=/bin/cut
+	SED=/bin/sed
+	SORT=/bin/sort
+	UNIQ=/bin/uniq
+	TEE=/bin/tee
+	CD=cd
+}
+
+sh_commands
+
+WEBHOME=`$GREP "^webadmin:" /etc/passwd|$CUT -f 6 -d":"`
+PR_DB=$WEBHOME/bin/pr_db
+
+BACKUP_HOME=$WEBHOME/htdocs/subsystem/netbackup
+SERVER_INFO="$BACKUP_HOME/client_list.txt"
+
+
+HEADER="CLIENT|APPLICATION|PLATFORM / SERVER|WHAT IS BACKED UP|PRODUCT USED|FREQUENCY|BACK-UP TYPE|TIME OF BACK-UP|SUCCESSFUL BACK-UPS|RESTORES"
+
+
+$SED '
+s/  */ /g
+s/^ *//
+s/ *$//
+s/\.[^ ]* / /'|
+$NAWK '
+	BEGIN{ OFS="	" }
+	body != 1 && $1 != "" && $0 ~ /^[Ff]rom:/{
+		split($0,a,"[@>]")
+		ofile=a[2]
+		print ofile 
+	}
+	$1 == "" { body=1}
+	body == 1 && $1 != "" && $1 ~ /^0/ && $0 !~ /Default-/ { 
+		if( $3 ~ /DB/ || $3 ~ /HOT/ || $3 ~ /COLD/ ) 
+			$3=sprintf("Database:%s",$3)
+       	 	else $3=sprintf("Filesystem:%s",$3)
+       	 	if( $4 ~ /INCR/ ) $4="INCR" ; else $4="FULL"
+		print $6,$2,$3,$4 
+	}
+'|$SORT -k 2,2 -k 3,3 -k 4,4 -k 1,1|$UNIQ -f 1 |{
+	read ofile
+	{
+		echo "$HEADER"
+		$NAWK -F"	" 'BEGIN{
+			while(getline < "'"$SERVER_INFO"'") client[$1]=$0; }
+		{ 	c=split(client[$2],out,"	");
+	        	if( c != 0 ){
+	               		out[4]=$3; out[7]=$4; out[8]=$1; 
+				for(i=1;i<=c;i++) printf "%s|",out[i];printf "\n"; }
+	        }'
+	}| $SED '
+		s/:/: /g
+		s/|*$//
+		s/  */ /g
+	'|$TEE $BACKUP_HOME/report/${ofile}.txt|
+	$SED 's/|/	/g' |
+	$TEE $BACKUP_HOME/report/${ofile}.db|
+	$PR_DB > $$BACKUP_HOME/report/{ofile}.html
+}
