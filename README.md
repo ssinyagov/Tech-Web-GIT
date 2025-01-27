@@ -17,5 +17,11 @@ All of the files are organized into folders. For example, /bin.
 ### Related products
 ## Get to Know the Author
 **Sergey Sinyagov** 
-with over twenty years of experience in the IT industry, has  specialize in comprehensive System and Solution Architecture design and implementation. has excel in assessing business needs and crafting appropriate system and solution architectures, utilizing methodologies and frameworks such as GIS, BIM, TOGAF, Agile, and CI/CD. His expertise includes leading proof-of-concept (POC) initiatives, facilitating monolith-to-service migrations, driving cross-domain technological and cloud transformations, and overseeing IT asset lifecycle governance.
-He has extensive experience communicating complex architectural models and solutions to stakeholders across public and commercial organizations. Additionally, He provide scientific support and spearhead the implementation of innovative digital initiatives and solutions, ensuring their successful integration and operational excellence.
+
+With over 20 years of experience in the IT industry, I specialize in designing and implementing comprehensive System and Solution Architectures that align with business needs. Leveraging methodologies and frameworks such as GIS, BIM, TOGAF, Agile, and CI/CD, I craft scalable, efficient, and innovative solutions.
+My expertise includes:
+- Leading proof-of-concept (POC) initiatives.
+- Facilitating monolith-to-microservice migrations.
+- Driving cross-domain technology and cloud transformations.
+- Overseeing IT asset lifecycle governance for operational efficiency.
+I have extensive experience communicating complex architectural models and solutions to stakeholders in both public and private sectors. Additionally, I provide scientific and technical support, championing the implementation of innovative digital initiatives to ensure seamless integration and operational excellence.
