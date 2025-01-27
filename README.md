@@ -24,4 +24,5 @@ My expertise includes:
 - Facilitating monolith-to-microservice migrations.
 - Driving cross-domain technology and cloud transformations.
 - Overseeing IT asset lifecycle governance for operational efficiency.
+
 I have extensive experience communicating complex architectural models and solutions to stakeholders in both public and private sectors. Additionally, I provide scientific and technical support, championing the implementation of innovative digital initiatives to ensure seamless integration and operational excellence.
